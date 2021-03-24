@@ -1,12 +1,12 @@
-number test = 5;
-test = test + 2;
+number test = 65 + 2;
 
-number another_test = 5 + 2 + 3;
+number another_test = 65 + 2;
 
-print(test + 65);
+print(test);
+print(test);
+print(another_test);
+print(another_test);
 
-number other = test + 2;
-
-print(other + 65);
-
-print(other + 2 + 65);
+if (another_test == test) {
+	print(66);
+}

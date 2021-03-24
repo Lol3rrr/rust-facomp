@@ -12,6 +12,11 @@ pub enum BuiltIns {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum Comparisons {
+    Equal,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Identifier(String),
     ValueNumber(u64),
@@ -24,4 +29,8 @@ pub enum Token {
     ClosingParan,
     Primitive(Primitives),
     Builtin(BuiltIns),
+    If,
+    OpenCurly,
+    ClosingCurly,
+    Comparison(Comparisons),
 }

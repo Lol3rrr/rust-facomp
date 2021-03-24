@@ -3,7 +3,7 @@ use crate::{
     frontend::ir::{IRFunction, IRNode, IRType},
 };
 
-pub fn generate_offsets(func: &IRFunction) -> VariableOffsets {
+pub fn generate_offsets(func: &IRFunction) -> (VariableOffsets, u64) {
     let mut vars = VariableOffsets::new();
     let mut offset = 0;
 
@@ -13,12 +13,12 @@ pub fn generate_offsets(func: &IRFunction) -> VariableOffsets {
                 let size = match var_type {
                     IRType::Number => 8,
                 };
-                offset += size;
 
                 vars.insert(name.clone(), offset);
+                offset += size;
             };
         }
     }
 
-    vars
+    (vars, offset)
 }

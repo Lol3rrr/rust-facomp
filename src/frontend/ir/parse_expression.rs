@@ -41,6 +41,9 @@ where
 
             return Some(IRExpression::Operation(op, vec![first_part, other_part]));
         }
+        Token::Comparison(_) => {
+            return parse_single(first);
+        }
         Token::Semicolon | Token::ClosingParan => {
             return parse_single(first);
         }

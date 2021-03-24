@@ -1,4 +1,4 @@
-use crate::frontend::{self, ir::IRFunction};
+use crate::frontend::ir::IRFunction;
 
 use std::collections::BTreeMap;
 
@@ -17,10 +17,6 @@ mod function;
 pub type VariableOffsets = BTreeMap<String, u64>;
 
 pub fn generate(ir: Vec<IRFunction>) -> String {
-    frontend::ir::pretty_print(&ir);
-
-    println!("Generating Assembly");
-
     let mut final_asm = Vec::new();
 
     final_asm.push(asm::Instruction::Section(".text".to_owned()));

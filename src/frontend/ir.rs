@@ -1,4 +1,6 @@
-use super::lexer::{BuiltIns, Primitives, Token};
+use std::{iter::Peekable, num::ParseIntError};
+
+use super::lexer::{BuiltIns, Comparisons, Primitives, Token};
 
 mod parse_expression;
 pub use parse_expression::parse_expression;
@@ -34,10 +36,16 @@ pub enum IRExpression {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum IRComparison {
+    Equals(IRExpression, IRExpression),
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum IRNode {
     DeclareVariable(IRIdentifier, IRType),
     Assignment(IRIdentifier, IRExpression),
     Call(IRIdentifier, IRExpression),
+    Conditional(IRComparison, Vec<Vec<IRNode>>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -46,11 +54,13 @@ pub struct IRFunction {
     pub statements: Vec<Vec<IRNode>>,
 }
 
-pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
+fn inner_parse<'a, I>(iter: &mut Peekable<I>) -> Option<Vec<Vec<IRNode>>>
+where
+    I: Iterator<Item = &'a Token>,
+{
     let mut result = Vec::new();
 
     let mut current_statement = Vec::with_capacity(3);
-    let mut iter = tokens.iter().peekable();
     while let Some(token) = iter.next() {
         match token {
             Token::Primitive(ref prim) => {
@@ -81,12 +91,16 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
                         // Advance the iterator
                         iter.next().unwrap();
 
-                        if let Some(exp) = parse_expression(&mut iter) {
+                        if let Some(exp) = parse_expression(iter) {
                             current_statement.push(IRNode::Assignment(name.clone(), exp));
                         }
                     }
                     _ => {
-                        println!("Unknown operation for identifier: {:?}", next_token);
+                        log::error!(
+                            "Unknown operation for identifier('{}'): {:?}",
+                            name,
+                            next_token
+                        );
                     }
                 };
             }
@@ -97,7 +111,7 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
                     Token::OpenParan => {
                         iter.next().unwrap();
 
-                        let inner = parse_expression(&mut iter)?;
+                        let inner = parse_expression(iter)?;
                         iter.next().unwrap();
 
                         let func_name = match builtin {
@@ -107,7 +121,7 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
                         current_statement.push(IRNode::Call(func_name, inner));
                     }
                     _ => {
-                        println!("Unknown operation for identifier: {:?}", next_token);
+                        log::error!("Unknown operation for identifier: {:?}", next_token);
                     }
                 };
             }
@@ -115,15 +129,67 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
                 result.push(current_statement.clone());
                 current_statement.clear();
             }
+            Token::If => {
+                match iter.peek().unwrap() {
+                    Token::OpenParan => {
+                        iter.next().unwrap();
+                    }
+                    _ => {
+                        log::error!("Unknown-Peek: {:?}", iter.peek());
+                        return None;
+                    }
+                };
+
+                let first_part = parse_expression(iter)?;
+
+                let comparison_token = iter.next().unwrap();
+
+                let second_part = parse_expression(iter)?;
+
+                let comp = match comparison_token {
+                    Token::Comparison(comp) => match comp {
+                        Comparisons::Equal => IRComparison::Equals(first_part, second_part),
+                    },
+                    _ => return None,
+                };
+
+                match iter.next().unwrap() {
+                    Token::ClosingParan => {}
+                    _ => return None,
+                };
+
+                // TODO
+                // Actually generate the IR for the comparison
+
+                match iter.peek().unwrap() {
+                    Token::OpenCurly => {
+                        iter.next().unwrap();
+                    }
+                    _ => return None,
+                };
+
+                let inner_scope = inner_parse(iter)?;
+
+                current_statement.push(IRNode::Conditional(comp, inner_scope));
+                result.push(current_statement.clone());
+                current_statement.clear();
+            }
+            Token::ClosingCurly => return Some(result),
             _ => {
-                println!("Unknown: {:?}", token);
+                log::error!("Unknown: {:?}", token);
             }
         };
     }
 
+    Some(result)
+}
+
+pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
+    let statements = inner_parse(&mut tokens.iter().peekable())?;
+
     Some(vec![IRFunction {
         name: "main".to_owned(),
-        statements: result,
+        statements,
     }])
 }
 
