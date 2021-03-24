@@ -1,12 +1,20 @@
-number test = 65 + 2;
+func test() {
+	print(80);
+}
 
-number another_test = 65 + 2;
+func main() {
+	number test = 65 + 2;
 
-print(test);
-print(test);
-print(another_test);
-print(another_test);
+	test();
 
-if (another_test == test) {
-	print(66);
+	number another_test = 65 + 2;
+
+	print(test);
+	print(test);
+	print(another_test);
+	print(another_test);
+
+	if (another_test == test) {
+		print(66);
+	}
 }

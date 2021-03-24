@@ -10,6 +10,7 @@ fn parse(part: &str) -> Option<Token> {
         "print" => Some(Token::Builtin(BuiltIns::Print)),
         "if" => Some(Token::If),
         "==" => Some(Token::Comparison(Comparisons::Equal)),
+        "func" => Some(Token::Function),
         _ if part.len() > 0 => {
             if let Ok(v) = part.parse() {
                 return Some(Token::ValueNumber(v));

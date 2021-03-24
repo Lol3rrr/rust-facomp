@@ -15,6 +15,9 @@ fn print_expression(prefix: &str, exp: &IRExpression) {
                 print_expression(&next_prefix, exp);
             }
         }
+        &IRExpression::Noop => {
+            println!("{}Noop", prefix);
+        }
     };
 }
 

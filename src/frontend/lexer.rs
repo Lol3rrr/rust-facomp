@@ -33,4 +33,5 @@ pub enum Token {
     OpenCurly,
     ClosingCurly,
     Comparison(Comparisons),
+    Function,
 }

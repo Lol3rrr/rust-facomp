@@ -41,6 +41,7 @@ pub fn generate(exp: &IRExpression, vars: &VariableOffsets) -> Vec<Instruction> 
                 }
             };
         }
+        &IRExpression::Noop => {}
     };
 
     result

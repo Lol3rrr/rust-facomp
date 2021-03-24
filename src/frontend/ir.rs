@@ -1,4 +1,4 @@
-use std::{iter::Peekable, num::ParseIntError};
+use std::iter::Peekable;
 
 use super::lexer::{BuiltIns, Comparisons, Primitives, Token};
 
@@ -33,6 +33,7 @@ pub enum IRExpression {
     Operation(IROperation, Vec<IRExpression>),
     Value(IRValue),
     Variable(IRIdentifier),
+    Noop,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -94,6 +95,21 @@ where
                         if let Some(exp) = parse_expression(iter) {
                             current_statement.push(IRNode::Assignment(name.clone(), exp));
                         }
+                    }
+                    Token::OpenParan => {
+                        iter.next().unwrap();
+
+                        match iter.peek() {
+                            Some(Token::ClosingParan) => {
+                                iter.next().unwrap();
+
+                                current_statement
+                                    .push(IRNode::Call(name.to_owned(), IRExpression::Noop));
+                            }
+                            _ => {
+                                unimplemented!("Calling functions with params not supported yet");
+                            }
+                        };
                     }
                     _ => {
                         log::error!(
@@ -158,9 +174,6 @@ where
                     _ => return None,
                 };
 
-                // TODO
-                // Actually generate the IR for the comparison
-
                 match iter.peek().unwrap() {
                     Token::OpenCurly => {
                         iter.next().unwrap();
@@ -184,13 +197,62 @@ where
     Some(result)
 }
 
-pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
-    let statements = inner_parse(&mut tokens.iter().peekable())?;
+// TODO
+fn parse_arguments<'a, I>(iter: &mut Peekable<I>)
+where
+    I: Iterator<Item = &'a Token>,
+{
+}
 
-    Some(vec![IRFunction {
-        name: "main".to_owned(),
-        statements,
-    }])
+pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
+    let mut result = Vec::new();
+
+    let mut iter = tokens.iter().peekable();
+    while let Some(current) = iter.next() {
+        match current {
+            Token::Function => {
+                let name = match iter.peek() {
+                    Some(Token::Identifier(name)) => {
+                        iter.next().unwrap();
+                        name.clone()
+                    }
+                    _ => return None,
+                };
+
+                log::debug!("Parsing-Function: {:?}", name);
+
+                match iter.peek() {
+                    Some(Token::OpenParan) => iter.next(),
+                    _ => return None,
+                };
+
+                let arguments = parse_arguments(&mut iter);
+                log::debug!("Function-Arguments: {:?}", arguments);
+
+                match iter.peek() {
+                    Some(Token::ClosingParan) => iter.next(),
+                    _ => return None,
+                };
+                match iter.peek() {
+                    Some(Token::OpenCurly) => iter.next(),
+                    _ => return None,
+                };
+
+                let inner = inner_parse(&mut iter)?;
+
+                let func = IRFunction {
+                    name,
+                    statements: inner,
+                };
+                result.push(func);
+            }
+            _ => {
+                log::error!("Unexpected: {:?}", current);
+            }
+        };
+    }
+
+    Some(result)
 }
 
 #[cfg(test)]
