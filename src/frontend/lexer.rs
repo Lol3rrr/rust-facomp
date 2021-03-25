@@ -25,6 +25,8 @@ pub enum Token {
     Minus,
     Multiply,
     Semicolon,
+    Colon,
+    Comma,
     OpenParan,
     ClosingParan,
     Primitive(Primitives),

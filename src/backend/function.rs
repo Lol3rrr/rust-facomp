@@ -22,8 +22,14 @@ fn generate_statement(statement: &[IRNode], variables: &VariableOffsets) -> Vec<
             }
             &IRNode::DeclareVariable(_, _) => {}
             &IRNode::Call(ref func_name, ref exp) => {
-                result.append(&mut expression::generate(exp, variables));
+                for tmp_exp in exp.iter().rev() {
+                    result.append(&mut expression::generate(tmp_exp, variables));
+                    result.push(Instruction::Push("rax".to_owned()));
+                }
                 result.push(Instruction::Call(func_name.clone()));
+                for _ in exp.iter() {
+                    result.push(Instruction::Add("rsp".to_owned(), "8".to_owned()));
+                }
             }
             &IRNode::Conditional(ref cond, ref nodes) => {
                 let rand_string: String = thread_rng()
@@ -61,6 +67,9 @@ pub fn generate_function(func: &IRFunction) -> Vec<Instruction> {
     let mut final_asm = Vec::new();
 
     let (vars, var_offset) = variables::generate_offsets(func);
+
+    // TODO
+    // Add support for actually generating code to deal with params
 
     final_asm.push(Instruction::Label(func.name.clone()));
     final_asm.push(Instruction::Push("rbp".to_owned()));

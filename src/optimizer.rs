@@ -2,9 +2,9 @@ use crate::frontend::{self, ir::IRFunction};
 
 mod const_prop;
 
-pub fn optimize(ir: &mut Vec<IRFunction>) {
+pub fn optimize(ir: &mut std::collections::HashMap<String, IRFunction>) {
     // Do some optimization
-    for func in ir.iter_mut() {
+    for (_, func) in ir.iter_mut() {
         const_prop::propagate(func);
     }
 

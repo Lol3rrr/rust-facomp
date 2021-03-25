@@ -30,7 +30,9 @@ fn print_node(prefix: &str, node: &IRNode) {
     match node {
         &IRNode::Call(ref name, ref exp) => {
             println!("{}Call-'{}':", prefix, name);
-            print_expression(&next_prefix, exp);
+            for tmp in exp {
+                print_expression(&next_prefix, tmp);
+            }
         }
         &IRNode::Assignment(ref name, ref exp) => {
             println!("{}Assignment-'{}':", prefix, name);
@@ -57,9 +59,13 @@ fn print_nodes(prefix: &str, nodes: &[IRNode]) {
     }
 }
 
-pub fn pretty_print(ir: &[IRFunction]) {
-    for func in ir {
+pub fn pretty_print(ir: &std::collections::HashMap<String, IRFunction>) {
+    for (_, func) in ir {
         println!("Function-'{}':", func.name);
+        println!("  Arguments:");
+        for param in func.parameters.iter() {
+            println!("    {}: {:?}", param.name, param.param_type);
+        }
         for statement in func.statements.iter() {
             println!("  Statement:");
             print_nodes("    ", statement);

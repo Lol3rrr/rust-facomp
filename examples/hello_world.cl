@@ -1,20 +1,22 @@
-func test() {
-	print(80);
+func test(to_print: number) {
+	print(to_print);
+}
+
+func print_add(n1: number, n2: number) {
+	print(n1 + n2);
 }
 
 func main() {
-	number test = 65 + 2;
+	test(66);
 
-	test();
+	print_add(65, 2);
 
 	number another_test = 65 + 2;
 
-	print(test);
-	print(test);
 	print(another_test);
 	print(another_test);
 
-	if (another_test == test) {
+	if (another_test == 67) {
 		print(66);
 	}
 }

@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 
 use crate::frontend::{
-    ir::{parse_expression, IRExpression, IRNode},
+    ir::{parse_expression, IRExpression, IRNode, IRValue},
     lexer::Token,
 };
 
@@ -27,16 +27,29 @@ where
         Token::OpenParan => {
             iter.next().unwrap();
 
-            match iter.peek() {
-                Some(Token::ClosingParan) => {
-                    iter.next().unwrap();
+            let mut inner = vec![];
 
-                    Some(IRNode::Call(name.to_owned(), IRExpression::Noop))
-                }
-                _ => {
-                    unimplemented!("Calling custom functions with params not supported yet");
-                }
+            while let Some(peeked) = iter.peek() {
+                match peeked {
+                    Token::ClosingParan => {
+                        iter.next().unwrap();
+                        break;
+                    }
+                    Token::ValueNumber(value) => {
+                        iter.next().unwrap();
+                        inner.push(IRExpression::Value(IRValue::Number(*value)));
+                    }
+                    Token::Comma => {
+                        iter.next().unwrap();
+                    }
+                    _ => {
+                        log::error!("Unexpected: {:?}", peeked);
+                        unimplemented!("Calling custom functions with params not supported yet");
+                    }
+                };
             }
+
+            Some(IRNode::Call(name.to_owned(), inner))
         }
         _ => {
             log::error!(

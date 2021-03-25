@@ -26,7 +26,7 @@ pub fn tokenize(content: String) -> Vec<Token> {
     let mut result = Vec::new();
 
     let mut searching = &content[..];
-    while let Some(index) = searching.find(&[' ', '\n', ';', '(', ')', '{', '}'][..]) {
+    while let Some(index) = searching.find(&[' ', '\n', ':', ';', ',', '(', ')', '{', '}'][..]) {
         let raw_part = &searching[..index];
         let part = raw_part.trim_start();
         if let Some(t) = parse(part) {
@@ -35,6 +35,12 @@ pub fn tokenize(content: String) -> Vec<Token> {
         match searching.get(index..index + 1).unwrap() {
             ";" => {
                 result.push(Token::Semicolon);
+            }
+            ":" => {
+                result.push(Token::Colon);
+            }
+            "," => {
+                result.push(Token::Comma);
             }
             "(" => {
                 result.push(Token::OpenParan);

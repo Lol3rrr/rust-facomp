@@ -46,18 +46,25 @@ pub enum IRComparison {
 pub enum IRNode {
     DeclareVariable(IRIdentifier, IRType),
     Assignment(IRIdentifier, IRExpression),
-    Call(IRIdentifier, IRExpression),
+    Call(IRIdentifier, Vec<IRExpression>),
     Conditional(IRComparison, Vec<Vec<IRNode>>),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct IRParameter {
+    pub name: IRIdentifier,
+    pub param_type: IRType,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct IRFunction {
     pub name: String,
+    pub parameters: Vec<IRParameter>,
     pub statements: Vec<Vec<IRNode>>,
 }
 
-pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
-    let mut result = Vec::new();
+pub fn parse(tokens: &[Token]) -> Option<std::collections::HashMap<String, IRFunction>> {
+    let mut result = std::collections::HashMap::new();
 
     let mut iter = tokens.iter().peekable();
     while let Some(current) = iter.next() {
@@ -77,7 +84,6 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
                 };
 
                 let arguments = parse_arguments::parse(&mut iter);
-                log::debug!("Function-Arguments: {:?}", arguments);
 
                 match iter.peek() {
                     Some(Token::ClosingParan) => iter.next(),
@@ -91,10 +97,11 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
                 let inner = parse_inner::inner_parse(&mut iter)?;
 
                 let func = IRFunction {
-                    name,
+                    name: name.clone(),
+                    parameters: arguments,
                     statements: inner,
                 };
-                result.push(func);
+                result.insert(name, func);
             }
             _ => {
                 log::error!("Unexpected: {:?}", current);
@@ -103,64 +110,4 @@ pub fn parse(tokens: &[Token]) -> Option<Vec<IRFunction>> {
     }
 
     Some(result)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use crate::frontend::lexer::Primitives;
-
-    #[test]
-    fn simple_initialize() {
-        let tokens = vec![
-            Token::Primitive(Primitives::Number),
-            Token::Identifier("test".to_owned()),
-            Token::Assignment,
-            Token::ValueNumber(1),
-            Token::Semicolon,
-        ];
-
-        let expected = vec![IRFunction {
-            name: "main".to_owned(),
-            statements: vec![vec![
-                IRNode::DeclareVariable("test".to_owned(), IRType::Number),
-                IRNode::Assignment("test".to_owned(), IRExpression::Value(IRValue::Number(1))),
-            ]],
-        }];
-
-        assert_eq!(Some(expected), parse(&tokens));
-    }
-
-    #[test]
-    fn initialize_with_simple_expression() {
-        let tokens = vec![
-            Token::Primitive(Primitives::Number),
-            Token::Identifier("test".to_owned()),
-            Token::Assignment,
-            Token::ValueNumber(1),
-            Token::Plus,
-            Token::Identifier("other".to_owned()),
-            Token::Semicolon,
-        ];
-
-        let expected = vec![IRFunction {
-            name: "main".to_owned(),
-            statements: vec![vec![
-                IRNode::DeclareVariable("test".to_owned(), IRType::Number),
-                IRNode::Assignment(
-                    "test".to_owned(),
-                    IRExpression::Operation(
-                        IROperation::Add,
-                        vec![
-                            IRExpression::Value(IRValue::Number(1)),
-                            IRExpression::Variable("other".to_owned()),
-                        ],
-                    ),
-                ),
-            ]],
-        }];
-
-        assert_eq!(Some(expected), parse(&tokens));
-    }
 }

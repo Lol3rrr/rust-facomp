@@ -14,9 +14,9 @@ mod function;
 
 /// Stores the Stack-Offset for every variable
 /// in the current Scope
-pub type VariableOffsets = BTreeMap<String, u64>;
+pub type VariableOffsets = BTreeMap<String, i64>;
 
-pub fn generate(ir: Vec<IRFunction>) -> String {
+pub fn generate(ir: std::collections::HashMap<String, IRFunction>) -> String {
     let mut final_asm = Vec::new();
 
     final_asm.push(asm::Instruction::Section(".text".to_owned()));
@@ -25,7 +25,7 @@ pub fn generate(ir: Vec<IRFunction>) -> String {
     // First generate all the Builtin code
     final_asm.append(&mut builtin::generate_builtins());
 
-    for func in ir {
+    for (_, func) in ir {
         final_asm.append(&mut function::generate_function(&func));
     }
 

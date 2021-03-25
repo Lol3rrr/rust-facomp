@@ -1,5 +1,6 @@
 use super::asm::Instruction;
 
+pub mod helper;
 mod print;
 
 pub fn generate_builtins() -> Vec<Instruction> {

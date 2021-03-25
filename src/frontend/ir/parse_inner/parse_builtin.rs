@@ -22,7 +22,7 @@ where
                 BuiltIns::Print => "print".to_owned(),
             };
 
-            Some(IRNode::Call(func_name, inner))
+            Some(IRNode::Call(func_name, vec![inner]))
         }
         _ => {
             log::error!("Unknown operation for identifier: {:?}", next_token);
