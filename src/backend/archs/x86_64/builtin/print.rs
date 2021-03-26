@@ -1,5 +1,4 @@
-use crate::backend::asm::Instruction;
-use crate::backend::builtin::helper;
+use crate::backend::archs::x86_64::{asm::Instruction, builtin::helper};
 
 // Calling print, prints out the value in eax
 pub fn generate(instr: &mut Vec<Instruction>) {

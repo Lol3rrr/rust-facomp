@@ -1,8 +1,9 @@
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
+use crate::backend::VariableOffsets;
 use crate::frontend::ir::{IRComparison, IRFunction, IRNode};
 
-use super::{asm::Instruction, VariableOffsets};
+use super::asm::Instruction;
 
 mod expression;
 mod variables;

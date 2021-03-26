@@ -1,5 +1,5 @@
 use crate::{
-    backend::{asm::Instruction, VariableOffsets},
+    backend::{archs::x86_64::asm::Instruction, VariableOffsets},
     frontend::ir::{IRExpression, IROperation, IRValue},
 };
 

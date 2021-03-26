@@ -1,4 +1,4 @@
-use crate::backend::asm::Instruction;
+use crate::backend::archs::x86_64::asm::Instruction;
 
 pub fn help_func(name: &str, instr: &mut Vec<Instruction>, mut content: Vec<Instruction>) {
     instr.push(Instruction::Label(name.to_owned()));

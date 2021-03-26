@@ -1,4 +1,7 @@
-use facompiler::{backend, frontend, optimizer};
+use facompiler::{
+    backend::{self, traits::Arch},
+    frontend, optimizer,
+};
 
 use env_logger;
 
@@ -16,7 +19,7 @@ fn main() {
     optimizer::optimize(&mut ir);
 
     // Generate Assembly from the IR
-    let asm = backend::generate(ir);
+    let asm = backend::archs::x86_64::X86_64::generate_asm_string(ir);
 
     std::fs::write("./test.asm", asm).expect("Unable to write asm file");
 }
