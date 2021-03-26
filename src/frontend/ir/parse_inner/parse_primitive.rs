@@ -17,6 +17,9 @@ where
 
     match next_token {
         Token::Identifier(ref name) => Some(IRNode::DeclareVariable(name.clone(), ir_type)),
-        _ => None,
+        _ => {
+            log::error!("Expected Identifier");
+            None
+        }
     }
 }

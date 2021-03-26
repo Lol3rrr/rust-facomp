@@ -44,10 +44,22 @@ where
         Token::Comparison(_) => {
             return parse_single(first);
         }
-        Token::Semicolon | Token::ClosingParan => {
+        Token::Semicolon | Token::ClosingParan | Token::Comma => {
             return parse_single(first);
         }
-        _ => {}
+        Token::OpenParan => {
+            let name = match first {
+                Token::Identifier(ref name) => name.clone(),
+                _ => return None,
+            };
+
+            let inner = parse_passed_args::parse(iter)?;
+
+            return Some(IRExpression::Call(name.to_owned(), inner));
+        }
+        _ => {
+            log::error!("Unexpected: {:?}", second);
+        }
     };
 
     None
@@ -120,6 +132,68 @@ mod tests {
                         IRExpression::Value(IRValue::Number(1)),
                     ],
                 ),
+            ],
+        );
+
+        assert_eq!(
+            Some(expected),
+            parse_expression(&mut tokens.iter().peekable())
+        );
+    }
+
+    #[test]
+    fn parse_call_no_param() {
+        let tokens = vec![
+            Token::Identifier("test_func".to_owned()),
+            Token::OpenParan,
+            Token::ClosingParan,
+            Token::Semicolon,
+        ];
+
+        let expected = IRExpression::Call("test_func".to_owned(), vec![]);
+
+        assert_eq!(
+            Some(expected),
+            parse_expression(&mut tokens.iter().peekable())
+        );
+    }
+    #[test]
+    fn parse_call_one_param() {
+        let tokens = vec![
+            Token::Identifier("test_func".to_owned()),
+            Token::OpenParan,
+            Token::ValueNumber(1),
+            Token::ClosingParan,
+            Token::Semicolon,
+        ];
+
+        let expected = IRExpression::Call(
+            "test_func".to_owned(),
+            vec![IRExpression::Value(IRValue::Number(1))],
+        );
+
+        assert_eq!(
+            Some(expected),
+            parse_expression(&mut tokens.iter().peekable())
+        );
+    }
+    #[test]
+    fn parse_call_two_params() {
+        let tokens = vec![
+            Token::Identifier("test_func".to_owned()),
+            Token::OpenParan,
+            Token::ValueNumber(1),
+            Token::Comma,
+            Token::ValueNumber(2),
+            Token::ClosingParan,
+            Token::Semicolon,
+        ];
+
+        let expected = IRExpression::Call(
+            "test_func".to_owned(),
+            vec![
+                IRExpression::Value(IRValue::Number(1)),
+                IRExpression::Value(IRValue::Number(2)),
             ],
         );
 

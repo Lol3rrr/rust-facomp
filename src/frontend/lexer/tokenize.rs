@@ -11,6 +11,8 @@ fn parse(part: &str) -> Option<Token> {
         "if" => Some(Token::If),
         "==" => Some(Token::Comparison(Comparisons::Equal)),
         "func" => Some(Token::Function),
+        "->" => Some(Token::Arrow),
+        "return" => Some(Token::Return),
         _ if part.len() > 0 => {
             if let Ok(v) = part.parse() {
                 return Some(Token::ValueNumber(v));
@@ -25,8 +27,10 @@ fn parse(part: &str) -> Option<Token> {
 pub fn tokenize(content: String) -> Vec<Token> {
     let mut result = Vec::new();
 
+    let seperators = &[' ', '\n', ':', ';', ',', '(', ')', '{', '}'];
+
     let mut searching = &content[..];
-    while let Some(index) = searching.find(&[' ', '\n', ':', ';', ',', '(', ')', '{', '}'][..]) {
+    while let Some(index) = searching.find(&seperators[..]) {
         let raw_part = &searching[..index];
         let part = raw_part.trim_start();
         if let Some(t) = parse(part) {

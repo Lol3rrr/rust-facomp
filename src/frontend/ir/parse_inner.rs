@@ -1,6 +1,6 @@
 use std::iter::Peekable;
 
-use super::IRNode;
+use super::{IRExpression, IRNode};
 use crate::frontend::lexer::Token;
 
 mod parse_builtin;
@@ -27,7 +27,7 @@ where
             }
             Token::Builtin(ref builtin) => {
                 let parsed = parse_builtin::parse(builtin, iter)?;
-                current_statement.push(parsed);
+                current_statement.push(IRNode::SingleExpression(parsed));
             }
             Token::Semicolon => {
                 result.push(current_statement.clone());
@@ -40,6 +40,21 @@ where
                 result.push(current_statement.clone());
                 current_statement.clear();
             }
+            Token::Return => {
+                let ret_exp = match iter.peek() {
+                    Some(Token::Identifier(ref name)) => {
+                        Some(IRExpression::Variable(name.to_owned()))
+                    }
+                    Some(Token::Semicolon) => None,
+                    _ => return None,
+                };
+
+                if ret_exp.is_some() {
+                    iter.next().unwrap();
+                }
+
+                current_statement.push(IRNode::Return(ret_exp));
+            }
             Token::ClosingCurly => return Some(result),
             _ => {
                 log::error!("Unknown: {:?}", token);
@@ -48,4 +63,53 @@ where
     }
 
     Some(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::frontend::ir::{IRType, IRValue};
+    use crate::frontend::lexer::Primitives;
+
+    #[test]
+    fn example_1() {
+        let tokens = vec![
+            Token::Primitive(Primitives::Number),
+            Token::Identifier("test".to_owned()),
+            Token::Assignment,
+            Token::ValueNumber(12),
+            Token::Semicolon,
+        ];
+
+        let expected = vec![vec![
+            IRNode::DeclareVariable("test".to_owned(), IRType::Number),
+            IRNode::Assignment("test".to_owned(), IRExpression::Value(IRValue::Number(12))),
+        ]];
+
+        assert_eq!(Some(expected), inner_parse(&mut tokens.iter().peekable()));
+    }
+
+    #[test]
+    fn example_2() {
+        let tokens = vec![
+            Token::Identifier("test".to_owned()),
+            Token::OpenParan,
+            Token::ValueNumber(1),
+            Token::Comma,
+            Token::ValueNumber(5),
+            Token::ClosingParan,
+            Token::Semicolon,
+        ];
+
+        let expected = vec![vec![IRNode::SingleExpression(IRExpression::Call(
+            "test".to_owned(),
+            vec![
+                IRExpression::Value(IRValue::Number(1)),
+                IRExpression::Value(IRValue::Number(5)),
+            ],
+        ))]];
+
+        assert_eq!(Some(expected), inner_parse(&mut tokens.iter().peekable()));
+    }
 }

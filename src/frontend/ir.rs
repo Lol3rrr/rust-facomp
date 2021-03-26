@@ -1,4 +1,4 @@
-use super::lexer::Token;
+use super::lexer::{Primitives, Token};
 
 mod parse_expression;
 pub use parse_expression::parse_expression;
@@ -8,6 +8,7 @@ pub use pretty_print::pretty_print;
 
 mod parse_arguments;
 mod parse_inner;
+mod parse_passed_args;
 
 pub type IRIdentifier = String;
 
@@ -34,6 +35,7 @@ pub enum IRExpression {
     Operation(IROperation, Vec<IRExpression>),
     Value(IRValue),
     Variable(IRIdentifier),
+    Call(IRIdentifier, Vec<IRExpression>),
     Noop,
 }
 
@@ -44,10 +46,11 @@ pub enum IRComparison {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum IRNode {
+    SingleExpression(IRExpression),
     DeclareVariable(IRIdentifier, IRType),
     Assignment(IRIdentifier, IRExpression),
-    Call(IRIdentifier, Vec<IRExpression>),
     Conditional(IRComparison, Vec<Vec<IRNode>>),
+    Return(Option<IRExpression>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -59,6 +62,7 @@ pub struct IRParameter {
 #[derive(Debug, PartialEq, Clone)]
 pub struct IRFunction {
     pub name: String,
+    pub return_type: Option<IRType>,
     pub parameters: Vec<IRParameter>,
     pub statements: Vec<Vec<IRNode>>,
 }
@@ -89,8 +93,32 @@ pub fn parse(tokens: &[Token]) -> Option<std::collections::HashMap<String, IRFun
                     Some(Token::ClosingParan) => iter.next(),
                     _ => return None,
                 };
-                match iter.peek() {
-                    Some(Token::OpenCurly) => iter.next(),
+                let return_type = match iter.peek() {
+                    Some(Token::OpenCurly) => {
+                        iter.next();
+                        None
+                    }
+                    Some(Token::Arrow) => {
+                        iter.next();
+
+                        let prim = match iter.peek() {
+                            Some(Token::Primitive(ref prim)) => {
+                                iter.next().unwrap();
+
+                                match prim {
+                                    Primitives::Number => IRType::Number,
+                                }
+                            }
+                            _ => return None,
+                        };
+
+                        match iter.peek() {
+                            Some(Token::OpenCurly) => iter.next().unwrap(),
+                            _ => return None,
+                        };
+
+                        Some(prim)
+                    }
                     _ => return None,
                 };
 
@@ -98,6 +126,7 @@ pub fn parse(tokens: &[Token]) -> Option<std::collections::HashMap<String, IRFun
 
                 let func = IRFunction {
                     name: name.clone(),
+                    return_type,
                     parameters: arguments,
                     statements: inner,
                 };

@@ -88,16 +88,13 @@ pub fn propagate(ir: &mut IRFunction) {
                     let n_exp = propagate_exp(exp);
                     drop(std::mem::replace(exp, n_exp));
                 }
-                IRNode::Call(_, exp) => {
-                    let mut n_exp = Vec::new();
-                    for tmp in exp.iter() {
-                        n_exp.push(propagate_exp(tmp));
-                    }
-
+                IRNode::SingleExpression(exp) => {
+                    let n_exp = propagate_exp(exp);
                     drop(std::mem::replace(exp, n_exp));
                 }
                 IRNode::DeclareVariable(_, _) => {}
                 IRNode::Conditional(_, _) => {}
+                IRNode::Return(_) => {}
             };
         }
     }

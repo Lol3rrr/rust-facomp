@@ -36,4 +36,6 @@ pub enum Token {
     ClosingCurly,
     Comparison(Comparisons),
     Function,
+    Return,
+    Arrow,
 }

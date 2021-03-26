@@ -1,12 +1,12 @@
 use crate::{
     backend::VariableOffsets,
-    frontend::ir::{IRFunction, IRNode, IRParameter, IRType},
+    frontend::ir::{IRFunction, IRNode, IRType},
 };
 
 pub fn generate_offsets(func: &IRFunction) -> (VariableOffsets, i64) {
     let mut vars = VariableOffsets::new();
     let mut param_offset = -16;
-    let mut local_offset = 0;
+    let mut local_offset = 8;
 
     for param in func.parameters.iter() {
         vars.insert(param.name.clone(), param_offset);
@@ -38,12 +38,18 @@ pub fn generate_offsets(func: &IRFunction) -> (VariableOffsets, i64) {
 mod tests {
     use super::*;
 
+    use crate::frontend::ir::{IRExpression, IRParameter};
+
     #[test]
     fn no_variables() {
         let function = IRFunction {
             name: "test".to_owned(),
+            return_type: None,
             parameters: vec![],
-            statements: vec![vec![IRNode::Call("test_func".to_owned(), vec![])]],
+            statements: vec![vec![IRNode::SingleExpression(IRExpression::Call(
+                "test_func".to_owned(),
+                vec![],
+            ))]],
         };
 
         let expected_vars = VariableOffsets::new();
@@ -59,6 +65,7 @@ mod tests {
     fn one_variable() {
         let function = IRFunction {
             name: "test".to_owned(),
+            return_type: None,
             parameters: vec![],
             statements: vec![vec![IRNode::DeclareVariable(
                 "test_var".to_owned(),
@@ -80,6 +87,7 @@ mod tests {
     fn one_param() {
         let function = IRFunction {
             name: "test".to_owned(),
+            return_type: None,
             parameters: vec![IRParameter {
                 name: "test_param".to_owned(),
                 param_type: IRType::Number,
@@ -100,6 +108,7 @@ mod tests {
     fn two_params() {
         let function = IRFunction {
             name: "test".to_owned(),
+            return_type: None,
             parameters: vec![
                 IRParameter {
                     name: "test_param1".to_owned(),

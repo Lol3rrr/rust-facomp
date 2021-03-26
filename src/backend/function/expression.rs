@@ -41,6 +41,16 @@ pub fn generate(exp: &IRExpression, vars: &VariableOffsets) -> Vec<Instruction> 
                 }
             };
         }
+        &IRExpression::Call(ref func_name, ref exp) => {
+            for tmp_exp in exp.iter().rev() {
+                result.append(&mut generate(tmp_exp, vars));
+                result.push(Instruction::Push("rax".to_owned()));
+            }
+            result.push(Instruction::Call(func_name.clone()));
+            for _ in exp.iter() {
+                result.push(Instruction::Add("rsp".to_owned(), "8".to_owned()));
+            }
+        }
         &IRExpression::Noop => {}
     };
 

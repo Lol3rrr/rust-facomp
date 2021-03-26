@@ -1,11 +1,11 @@
 use std::iter::Peekable;
 
 use crate::frontend::{
-    ir::{parse_expression::parse_expression, IRNode},
+    ir::{parse_expression::parse_expression, IRExpression},
     lexer::{BuiltIns, Token},
 };
 
-pub fn parse<'a, I>(builtin: &BuiltIns, iter: &mut Peekable<I>) -> Option<IRNode>
+pub fn parse<'a, I>(builtin: &BuiltIns, iter: &mut Peekable<I>) -> Option<IRExpression>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -22,7 +22,7 @@ where
                 BuiltIns::Print => "print".to_owned(),
             };
 
-            Some(IRNode::Call(func_name, vec![inner]))
+            Some(IRExpression::Call(func_name, vec![inner]))
         }
         _ => {
             log::error!("Unknown operation for identifier: {:?}", next_token);

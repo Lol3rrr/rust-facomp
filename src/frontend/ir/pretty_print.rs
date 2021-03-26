@@ -15,6 +15,12 @@ fn print_expression(prefix: &str, exp: &IRExpression) {
                 print_expression(&next_prefix, exp);
             }
         }
+        &IRExpression::Call(ref name, ref exp) => {
+            println!("{}Call-'{}':", prefix, name);
+            for tmp in exp {
+                print_expression(&next_prefix, tmp);
+            }
+        }
         &IRExpression::Noop => {
             println!("{}Noop", prefix);
         }
@@ -28,12 +34,6 @@ fn get_next_prefix(current: &str) -> String {
 fn print_node(prefix: &str, node: &IRNode) {
     let next_prefix = get_next_prefix(prefix);
     match node {
-        &IRNode::Call(ref name, ref exp) => {
-            println!("{}Call-'{}':", prefix, name);
-            for tmp in exp {
-                print_expression(&next_prefix, tmp);
-            }
-        }
         &IRNode::Assignment(ref name, ref exp) => {
             println!("{}Assignment-'{}':", prefix, name);
             print_expression(&next_prefix, exp);
@@ -49,6 +49,19 @@ fn print_node(prefix: &str, node: &IRNode) {
             for tmp in nodes {
                 print_nodes(&n_next_prefix, tmp);
             }
+        }
+        &IRNode::Return(ref raw_exp) => {
+            match raw_exp {
+                Some(exp) => {
+                    println!("{}Return:", prefix);
+                    print_expression(&next_prefix, exp);
+                }
+                None => println!("{}Return", prefix),
+            };
+        }
+        &IRNode::SingleExpression(ref exp) => {
+            println!("{}Expression:", prefix);
+            print_expression(&next_prefix, exp);
         }
     };
 }
