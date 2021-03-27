@@ -16,6 +16,24 @@ func test_with_var() {
 	number test_var = 0;
 }
 
+func print_loop() {
+	number i = 85;
+	while (i > 65) {
+		print(i);	
+		i = i - 1;
+	}
+}
+
+func custom_mul(n1: number, n2: number) -> number {
+	number result = 0;
+	while (n2 > 0) {
+		result = result + n1;
+		n2 = n2 - 1;
+	}
+
+	return result;
+}
+
 func main() {
 	test(66);
 
@@ -33,4 +51,8 @@ func main() {
 	if (another_test == 67) {
 		print(66);
 	}
+
+	print_loop();
+
+	print(custom_mul(17, 4));
 }

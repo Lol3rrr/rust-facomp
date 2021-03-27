@@ -1,5 +1,35 @@
 #[derive(Debug, PartialEq)]
+pub enum Register {
+    RAX,
+    RBX,
+    RCX,
+    RDX,
+    /// Stack-Pointer
+    RSP,
+    /// Stack-Base-Pointer
+    RBP,
+    RSI,
+    RDI,
+}
+
+impl Register {
+    pub fn to_string(&self) -> String {
+        match self {
+            Register::RAX => "rax".to_string(),
+            Register::RBX => "rbx".to_string(),
+            Register::RCX => "rcx".to_string(),
+            Register::RDX => "rdx".to_string(),
+            Register::RSP => "rsp".to_string(),
+            Register::RBP => "rbp".to_string(),
+            Register::RSI => "rsi".to_string(),
+            Register::RDI => "rdi".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Instruction {
+    Comment(String),
     Section(String),
     Label(String),
     Add(String, String),
@@ -13,6 +43,8 @@ pub enum Instruction {
     Cmp(String, String),
     Je(String),
     Jne(String),
+    Jle(String),
+    Jg(String),
     Syscall,
     Int(String),
     Lea(String, String),
@@ -21,6 +53,7 @@ pub enum Instruction {
 
 fn format_asm(instr: &Instruction) -> String {
     match instr {
+        Instruction::Comment(a1) => format!("    ; {}", a1),
         Instruction::Section(a1) => format!("section {}", a1),
         Instruction::Label(a1) => format!("  {}:", a1),
         Instruction::Add(a1, a2) => format!("    add {}, {}", a1, a2),
@@ -34,6 +67,8 @@ fn format_asm(instr: &Instruction) -> String {
         Instruction::Cmp(a1, a2) => format!("    cmp {}, {}", a1, a2),
         Instruction::Je(a1) => format!("    je {}", a1),
         Instruction::Jne(a1) => format!("    jne {}", a1),
+        Instruction::Jle(a1) => format!("    jle {}", a1),
+        Instruction::Jg(a1) => format!("    jg {}", a1),
         Instruction::Syscall => format!("    syscall"),
         Instruction::Int(a1) => format!("    int {}", a1),
         Instruction::Lea(a1, a2) => format!("    lea {},{}", a1, a2),

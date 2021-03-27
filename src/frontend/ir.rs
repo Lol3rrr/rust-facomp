@@ -42,6 +42,7 @@ pub enum IRExpression {
 #[derive(Debug, PartialEq, Clone)]
 pub enum IRComparison {
     Equals(IRExpression, IRExpression),
+    GreaterThan(IRExpression, IRExpression),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -50,6 +51,7 @@ pub enum IRNode {
     DeclareVariable(IRIdentifier, IRType),
     Assignment(IRIdentifier, IRExpression),
     Conditional(IRComparison, Vec<Vec<IRNode>>),
+    Loop(IRComparison, Vec<Vec<IRNode>>),
     Return(Option<IRExpression>),
 }
 

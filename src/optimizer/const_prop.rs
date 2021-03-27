@@ -94,6 +94,7 @@ pub fn propagate(ir: &mut IRFunction) {
                 }
                 IRNode::DeclareVariable(_, _) => {}
                 IRNode::Conditional(_, _) => {}
+                IRNode::Loop(_, _) => {}
                 IRNode::Return(_) => {}
             };
         }

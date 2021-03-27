@@ -1,5 +1,8 @@
 use crate::{
-    backend::{archs::x86_64::asm::Instruction, VariableOffsets},
+    backend::{
+        archs::x86_64::asm::{Instruction, Register},
+        VariableOffsets,
+    },
     frontend::ir::{IRExpression, IROperation, IRValue},
 };
 
@@ -7,7 +10,7 @@ use crate::{
 pub fn generate(exp: &IRExpression, vars: &VariableOffsets) -> Vec<Instruction> {
     let mut result = Vec::new();
 
-    let target = "eax".to_owned();
+    let target = Register::RAX.to_string();
     match exp {
         &IRExpression::Value(ref ir_value) => match ir_value {
             IRValue::Number(ref value) => {
@@ -24,17 +27,27 @@ pub fn generate(exp: &IRExpression, vars: &VariableOffsets) -> Vec<Instruction> 
             let second = other_exp.get(1).unwrap();
 
             result.append(&mut generate(first, vars));
-            result.push(Instruction::Push("rax".to_owned()));
+            result.push(Instruction::Push(Register::RAX.to_string()));
             result.append(&mut generate(second, vars));
 
-            result.push(Instruction::Pop("rbx".to_owned()));
+            result.push(Instruction::Move(
+                Register::RBX.to_string(),
+                Register::RAX.to_string(),
+            ));
+            result.push(Instruction::Pop(Register::RAX.to_string()));
 
             match operation {
                 &IROperation::Add => {
-                    result.push(Instruction::Add("eax".to_owned(), "ebx".to_owned()));
+                    result.push(Instruction::Add(
+                        Register::RAX.to_string(),
+                        Register::RBX.to_string(),
+                    ));
                 }
                 &IROperation::Sub => {
-                    result.push(Instruction::Sub("eax".to_owned(), "ebx".to_owned()));
+                    result.push(Instruction::Sub(
+                        Register::RAX.to_string(),
+                        Register::RBX.to_string(),
+                    ));
                 }
                 _ => {
                     println!("Unknown OP: {:?}", operation);
@@ -44,11 +57,11 @@ pub fn generate(exp: &IRExpression, vars: &VariableOffsets) -> Vec<Instruction> 
         &IRExpression::Call(ref func_name, ref exp) => {
             for tmp_exp in exp.iter().rev() {
                 result.append(&mut generate(tmp_exp, vars));
-                result.push(Instruction::Push("rax".to_owned()));
+                result.push(Instruction::Push(Register::RAX.to_string()));
             }
             result.push(Instruction::Call(func_name.clone()));
             for _ in exp.iter() {
-                result.push(Instruction::Add("rsp".to_owned(), "8".to_owned()));
+                result.push(Instruction::Add(Register::RSP.to_string(), "8".to_owned()));
             }
         }
         &IRExpression::Noop => {}

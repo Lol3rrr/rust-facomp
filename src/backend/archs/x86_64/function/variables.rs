@@ -53,7 +53,7 @@ mod tests {
         };
 
         let expected_vars = VariableOffsets::new();
-        let expected_offset = 0;
+        let expected_offset = 8;
 
         let (result_vars, result_offset) = generate_offsets(&function);
 
@@ -74,8 +74,8 @@ mod tests {
         };
 
         let mut expected_vars = VariableOffsets::new();
-        expected_vars.insert("test_var".to_owned(), 0);
-        let expected_offset = 8;
+        expected_vars.insert("test_var".to_owned(), 8);
+        let expected_offset = 16;
 
         let (result_vars, result_offset) = generate_offsets(&function);
 
@@ -97,7 +97,7 @@ mod tests {
 
         let mut expected_vars = VariableOffsets::new();
         expected_vars.insert("test_param".to_owned(), -16);
-        let expected_offset = 0;
+        let expected_offset = 8;
 
         let (result_vars, result_offset) = generate_offsets(&function);
 
@@ -125,7 +125,7 @@ mod tests {
         let mut expected_vars = VariableOffsets::new();
         expected_vars.insert("test_param1".to_owned(), -16);
         expected_vars.insert("test_param2".to_owned(), -24);
-        let expected_offset = 0;
+        let expected_offset = 8;
 
         let (result_vars, result_offset) = generate_offsets(&function);
 

@@ -14,6 +14,7 @@ pub enum BuiltIns {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Comparisons {
     Equal,
+    GreaterThan,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -32,6 +33,7 @@ pub enum Token {
     Primitive(Primitives),
     Builtin(BuiltIns),
     If,
+    While,
     OpenCurly,
     ClosingCurly,
     Comparison(Comparisons),

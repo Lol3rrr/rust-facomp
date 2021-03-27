@@ -1,22 +1,21 @@
 use std::iter::Peekable;
 
+use super::inner_parse;
 use crate::frontend::{
     ir::{parse_expression, IRComparison, IRNode},
     lexer::{Comparisons, Token},
 };
 
-use super::inner_parse;
-
 pub fn parse<'a, I>(iter: &mut Peekable<I>) -> Option<IRNode>
 where
     I: Iterator<Item = &'a Token>,
 {
-    match iter.peek().unwrap() {
-        Token::OpenParan => {
+    match iter.peek() {
+        Some(Token::OpenParan) => {
             iter.next().unwrap();
         }
         _ => {
-            log::error!("Unknown-Peek: {:?}", iter.peek());
+            log::error!("Unexpected: {:?}", iter.peek());
             return None;
         }
     };
@@ -28,13 +27,14 @@ where
     let second_part = parse_expression(iter)?;
 
     let comp = match comparison_token {
-        Token::Comparison(comp) => match comp {
+        Token::Comparison(cmp) => match cmp {
             Comparisons::Equal => IRComparison::Equals(first_part, second_part),
-            Comparisons::GreaterThan => {
-                unimplemented!("Does not yet support comparisons other than an equality check");
-            }
+            Comparisons::GreaterThan => IRComparison::GreaterThan(first_part, second_part),
         },
-        _ => return None,
+        _ => {
+            log::error!("Expected Comparison: {:?}", comparison_token);
+            return None;
+        }
     };
 
     match iter.next().unwrap() {
@@ -51,5 +51,5 @@ where
 
     let inner_scope = inner_parse(iter)?;
 
-    Some(IRNode::Conditional(comp, inner_scope))
+    Some(IRNode::Loop(comp, inner_scope))
 }

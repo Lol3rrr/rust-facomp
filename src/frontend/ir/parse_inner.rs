@@ -7,6 +7,7 @@ mod parse_builtin;
 mod parse_identifier;
 mod parse_if;
 mod parse_primitive;
+mod parse_while;
 
 pub fn inner_parse<'a, I>(iter: &mut Peekable<I>) -> Option<Vec<Vec<IRNode>>>
 where
@@ -35,6 +36,13 @@ where
             }
             Token::If => {
                 let parsed = parse_if::parse(iter)?;
+                current_statement.push(parsed);
+
+                result.push(current_statement.clone());
+                current_statement.clear();
+            }
+            Token::While => {
+                let parsed = parse_while::parse(iter)?;
                 current_statement.push(parsed);
 
                 result.push(current_statement.clone());

@@ -9,7 +9,9 @@ fn parse(part: &str) -> Option<Token> {
         "number" => Some(Token::Primitive(Primitives::Number)),
         "print" => Some(Token::Builtin(BuiltIns::Print)),
         "if" => Some(Token::If),
+        "while" => Some(Token::While),
         "==" => Some(Token::Comparison(Comparisons::Equal)),
+        ">" => Some(Token::Comparison(Comparisons::GreaterThan)),
         "func" => Some(Token::Function),
         "->" => Some(Token::Arrow),
         "return" => Some(Token::Return),
@@ -20,6 +22,19 @@ fn parse(part: &str) -> Option<Token> {
 
             Some(Token::Identifier(part.to_owned()))
         }
+        _ => None,
+    }
+}
+
+fn parse_seperator(chars: &str) -> Option<Token> {
+    match chars {
+        ";" => Some(Token::Semicolon),
+        ":" => Some(Token::Colon),
+        "," => Some(Token::Comma),
+        "(" => Some(Token::OpenParan),
+        ")" => Some(Token::ClosingParan),
+        "{" => Some(Token::OpenCurly),
+        "}" => Some(Token::ClosingCurly),
         _ => None,
     }
 }
@@ -36,30 +51,9 @@ pub fn tokenize(content: String) -> Vec<Token> {
         if let Some(t) = parse(part) {
             result.push(t);
         }
-        match searching.get(index..index + 1).unwrap() {
-            ";" => {
-                result.push(Token::Semicolon);
-            }
-            ":" => {
-                result.push(Token::Colon);
-            }
-            "," => {
-                result.push(Token::Comma);
-            }
-            "(" => {
-                result.push(Token::OpenParan);
-            }
-            ")" => {
-                result.push(Token::ClosingParan);
-            }
-            "{" => {
-                result.push(Token::OpenCurly);
-            }
-            "}" => {
-                result.push(Token::ClosingCurly);
-            }
-            _ => {}
-        };
+        if let Some(t) = parse_seperator(searching.get(index..index + 1).unwrap()) {
+            result.push(t);
+        }
 
         searching = &searching[index + 1..];
     }

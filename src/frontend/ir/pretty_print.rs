@@ -50,6 +50,14 @@ fn print_node(prefix: &str, node: &IRNode) {
                 print_nodes(&n_next_prefix, tmp);
             }
         }
+        &IRNode::Loop(ref comparison, ref nodes) => {
+            println!("{}Loop:", prefix);
+            println!("{}{:?}", next_prefix, comparison);
+            let n_next_prefix = get_next_prefix(&next_prefix);
+            for tmp in nodes {
+                print_nodes(&n_next_prefix, tmp);
+            }
+        }
         &IRNode::Return(ref raw_exp) => {
             match raw_exp {
                 Some(exp) => {
